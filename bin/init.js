@@ -27,6 +27,8 @@ Init options:
   -V, --version          Show version and runtime information, then exit
   --readme               Render README.md in the terminal and exit
   --changelog            Render CHANGELOG.md in the terminal and exit
+  --readme-tui           Open README.md as a navigable terminal UI and exit
+  --readme-wui           Serve README.md as a navigable Web UI and exit
   --export [output.tgz]  Export this Buninu installation (default: ./buninu.tgz)
   --export-config [output.json]  Export this package.json (default: ./buninu.json)
   -i, --install [dir]    Install this package into <dir>/${pkg.name} (default: .)
@@ -93,6 +95,16 @@ async function handleInformationArguments(arguments_) {
     return true;
   }
 
+  const markdownUi = arguments_.includes("--readme-tui")
+    ? "--tui"
+    : arguments_.includes("--readme-wui")
+      ? "--wui"
+      : null;
+  if (markdownUi) {
+    await openReadmeMarkdownUi(markdownUi);
+    return true;
+  }
+
   if (arguments_.includes("--changelog")) {
     const changelogPath = resolve(REPO_ROOT, "CHANGELOG.md");
     if (!await pathExists(changelogPath)) fail(`CHANGELOG not found: ${changelogPath}`);
@@ -103,6 +115,47 @@ async function handleInformationArguments(arguments_) {
   }
 
   return false;
+}
+
+// jsmdcui writes five generated companion files beside the Markdown it opens
+// (`*.md.front.js`, `*.md.back.js`, `*.md.html`, `*.md-rpc.js`,
+// `*.md-server.js`), and needs that directory to be writable. Run it on a copy
+// under TMPDIR rather than on README.md in place: an installation is the
+// user's to keep, `--export` would carry the generated files to another
+// machine, an update never deletes them again, and under `npx` the package
+// directory is a cache that should not be written to at all. Nothing is lost
+// by the move -- the README's only image is a remote URL, and what makes it
+// navigable is same-document `#heading-id` links, which resolve wherever the
+// file sits.
+async function openReadmeMarkdownUi(mode) {
+  const readmePath = resolve(REPO_ROOT, "README.md");
+  if (!await pathExists(readmePath)) fail(`README not found: ${readmePath}`);
+
+  const entry = resolve(rootDir, "apps", "jsmdcui", "src", "index.js");
+  if (!await pathExists(entry)) fail(`jsmdcui not found: ${entry}`);
+
+  const environment = await detectEnvironment();
+  const workDir = resolve(resolveTmpDir(environment), "buninu-readme");
+  // Start from a clean directory so a stale generated file from an older
+  // README can never be served in place of a freshly generated one.
+  rmSync(workDir, { recursive: true, force: true });
+  mkdirSync(workDir, { recursive: true });
+
+  const target = resolve(workDir, "README.md");
+  await Bun.write(target, Bun.file(readmePath));
+
+  // jsmdcui's entry point is a bundled CLI with no exports: it reads
+  // process.argv at the top level and runs. Set the argv it expects and import
+  // it, so this stays one process instead of spawning a second Bun.
+  process.argv = [process.argv[0], entry, mode, target];
+  await import(entry);
+
+  // jsmdcui owns the process from here on: it holds the terminal UI, or the
+  // Web UI server, open. Never resolve -- returning would hand control back to
+  // the caller, whose process.exit(0) would cut the UI off before it draws.
+  // This keeps no handle of its own, so once jsmdcui's are gone the process
+  // still ends on its own.
+  await new Promise(() => {});
 }
 
 function readExportArgument(arguments_) {
@@ -418,16 +471,19 @@ function configuredXdgDataHome() {
   return isAbsolute(configured) ? configured : resolve(rootDir, configured);
 }
 
-async function createChildEnvironment(environment) {
-  const packageDir = dirname(rootDir);
-  const androidCacheDir = resolve(packageDir, "cache");
-  const tmpDir = process.env.TMPDIR || (
+function resolveTmpDir(environment) {
+  const androidCacheDir = resolve(dirname(rootDir), "cache");
+  return process.env.TMPDIR || (
     environment.name === "android"
       ? existsSync(androidCacheDir)
         ? androidCacheDir
         : resolve(rootDir, "tmp")
       : systemTmpDir()
   );
+}
+
+async function createChildEnvironment(environment) {
+  const tmpDir = resolveTmpDir(environment);
   const homeDir = process.env.HOME || homedir() || rootDir;
   const envFile = await pathExists(resolve(rootDir, ".bashrc"))
     ? resolve(rootDir, ".bashrc")

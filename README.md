@@ -1,6 +1,8 @@
 # Buninu
 
-**BUNinu Is Not Unix** 🐮 ・ **幫你牛** 🐂 ・ **Bunに入魂** 🔥
+**BUNinu Is Not Unix** 🐮
+
+**幫你牛** 🐂 ・ **Bunに入魂** 🔥
 
 ![icon](https://raw.githubusercontent.com/jjtseng93/buninu/main/icon.png)
 
@@ -329,6 +331,8 @@ Everything else on the command line is forwarded to jsgotty.
 -V, --version    Show the Buninu and Bun versions, plus platform and arch
 --readme         Render README.md in the terminal
 --changelog      Render CHANGELOG.md in the terminal
+--readme-tui     Open README.md as a navigable terminal UI
+--readme-wui     Serve README.md as a navigable Web UI
 --local          Start bunmsh in this terminal instead of a browser terminal
 
 -i,  --install [dir]        Install into <dir>/buninu (default: .)
@@ -339,6 +343,14 @@ Everything else on the command line is forwarded to jsgotty.
 --shell <path|name>   Override buninu.shell for this run
 --command <command>   Override buninu.command for this run
 ```
+
+`--readme-tui` and `--readme-wui` hand README.md to jsmdcui, so its headings
+and its table of contents become links you can follow rather than text you
+scroll past — the first in this terminal, the second at a URL it prints for a
+browser. Opening a Markdown file that way makes jsmdcui write five generated
+files beside it, so Buninu copies README.md into a directory under `TMPDIR`
+first and runs it there: an installation stays yours, and nothing generated
+ends up in an `--export` or outliving an update.
 
 `--install --help` lists the install options in full, including `--force` and
 `--yes`; see [Install and update](#install-and-update) for what an update does
@@ -367,7 +379,7 @@ rather than this one.
 Once you are inside a running Buninu shell, these are available (the
 validated source list is `apps/cmdlist`; see [Add a command](#add-a-command)
 for how it works):
-
+---
 - **Bun Modern Shell & its builtins**
   * `bunmsh` — Bun Modern Shell supports multi-tabs cwd
   * `catfancy` — Pretty print a file with JSON, YAML, TOML, Markdown and JS/TS colored
