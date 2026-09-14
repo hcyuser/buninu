@@ -557,10 +557,10 @@ function shellCommandArguments(shell, command, exitAfterCmd) {
   }
 
   const wrapped =
-    `buninu_command=$1; shift; ( eval "$buninu_command" ); status=$?; ` +
-    `if [ "$status" -ne 0 ]; then ` +
-    `echo "buninu: startup command failed with exit $status" >&2; ` +
-    (exitAfterCmd ? `fi; exit "$status"` : `fi; exec "$0"`);
+    `buninu_command=$1; shift; ( eval "$buninu_command" ); _buninu_status=$?; ` +
+    `if [ "$_buninu_status" -ne 0 ]; then ` +
+    `echo "buninu: startup command failed with exit $_buninu_status" >&2; ` +
+    (exitAfterCmd ? `fi; exit "$_buninu_status"` : `fi; exec "$0"`);
   // Pass both the shell and startup command as argv instead of interpolating
   // them into the wrapper. This keeps the wrapper single-line and avoids LF
   // (Ctrl+J) characters in its process-list representation.
