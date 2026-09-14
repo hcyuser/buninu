@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.6 - 2026-09-14
+
+### Fixed
+
+- Experimental macOS support
+  * Fall back to `$0` when `/proc` is unavailable 
+  * Rename the shell wrapper's `status` variable to `_buninu_status`; `status`
+    is read-only in zsh, so the web terminal died the moment it connected on a
+    default macOS shell
+  * Thanks @hcyuser for the contribution! (#1, #2)
+
 ## 0.4.5 - 2026-09-10
 
 0.4.4 is intentionally skipped 不吉利
