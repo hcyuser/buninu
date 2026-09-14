@@ -534,6 +534,28 @@ native-bridge evalwv 1 document.title
 native-bridge currwv
 ```
 
+## Differences from upstream
+
+The versions of jsmdcui and jsgotty bundled here differ from the ones their
+own projects ship.
+
+### The bundled jsmdcui
+
+  * Is configured editor-first by `MDCUI_DEFAULT_EDIT`
+  * The command `jmi` with a Markdown file opens the normal terminal editor
+    (js micro editor)
+  * The command `jsmdcui` preserves its original behavior:
+    `apps/jsmdcui/jsmdcui.sh`, which starts its `tui` entry point with
+    `--mdcui` when running Markdown apps, and forwards all command-line
+    arguments
+  * Adds the Buninu-only `# syntax: markdown` marker for Markdown highlighting
+    in extensionless files; upstreaming may be considered later
+
+### The bundled jsgotty
+
+  * No longer depends on or ships `node-pty`
+  * Its PTY is provided by Bun's terminal API
+
 ## Data & Persistence
 
 Running Buninu via `npx` works like a container: `npx` fetches the package into
@@ -666,28 +688,6 @@ over it repairs it and still merges your configuration back in.
 A source checkout's own `.git` is never copied into an installation, so
 installing into a directory that is itself a repository leaves that repository
 alone.
-
-## Differences from upstream
-
-The versions of jsmdcui and jsgotty bundled here differ from the ones their
-own projects ship.
-
-### The bundled jsmdcui
-
-  * Is configured editor-first by `MDCUI_DEFAULT_EDIT`
-  * The command `jmi` with a Markdown file opens the normal terminal editor
-    (js micro editor)
-  * The command `jsmdcui` preserves its original behavior:
-    `apps/jsmdcui/jsmdcui.sh`, which starts its `tui` entry point with
-    `--mdcui` when running Markdown apps, and forwards all command-line
-    arguments
-  * Adds the Buninu-only `# syntax: markdown` marker for Markdown highlighting
-    in extensionless files; upstreaming may be considered later
-
-### The bundled jsgotty
-
-  * No longer depends on or ships `node-pty`
-  * Its PTY is provided by Bun's terminal API
 
 ## Export
 
@@ -1097,9 +1097,9 @@ an alias that fails to define leaves it reachable. See
 - [Command-line usage](#command-line-usage)
   * [Launching a bundled app directly](#launching-a-bundled-app-directly)
 - [Commands inside the shell](#commands-inside-the-shell)
+- [Differences from upstream](#differences-from-upstream)
 - [Data & Persistence](#data--persistence)
 - [Install and update](#install-and-update)
-- [Differences from upstream](#differences-from-upstream)
 - [Export](#export)
 - [Environment](#environment)
 - [Add a command](#add-a-command)
