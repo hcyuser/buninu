@@ -2,8 +2,42 @@
 
 ## 0.4.7 - 2026-09-14
 
+### Added
+
+- `--readme-tui` and `--readme-wui` open README.md through jsmdcui instead of
+  printing it, so its headings and its table of contents become links to
+  follow -- the first as a terminal UI, the second served at a URL for a
+  browser. jsmdcui writes five generated files beside any Markdown it opens,
+  so README.md is copied into a directory under `TMPDIR` and run from there:
+  an installation stays the user's, and nothing generated reaches an
+  `--export` or survives an update
+- `--bunmsh` joins `--jsgotty`, `--jsmdcui` and `--musl-la` as a first
+  argument that spawns that app directly, forwarding every remaining argument
+  and exiting with its exit code
+
+### Changed
+
+- `package.json` now carries `repository`, `homepage`, `bugs`, `keywords` and
+  `author`, so the npm page links back to the source and the package can be
+  found by search
+- `apps/musl-la/NOTICE` records where the bundled musl loader came from:
+  Alpine's `musl` 1.2.5-r10 for aarch64, with the SHA-256 of the binary. That
+  pkgrel is no longer on Alpine's CDN, which keeps only the current one, so
+  the note points at an archived copy of the same build
+- Seven licence texts in `apps/musl-la/LICENSES/` covered components this
+  package does not ship -- ggml, libssh2, curl, zlib, LLVM, a bare Apache-2.0
+  and LGPL-3.0 -- and have been removed. The three binaries there are covered
+  by `LICENSE_musl.txt`, `GPL-3.0.txt` and `gcc_runtime_exception.txt`, which
+  stay
+- README.md reorganised: a shorter opening that reaches `Install Bun` and
+  `Start` sooner, the command reference moved ahead of the sections about
+  keeping and updating an installation, grouped command listings, and the
+  naming convention for platform-specific binaries (`la`, `lx`, `aa`, `wx`,
+  `ma`) written down
+
 ### Fixed
 
+- `--local` was missing from `--help` entirely, and now leads the option list
 - `showimg` in a browser terminal
   * Bind the scroll and render listeners before decoding the image rather than
     after it. The server sends the placement ahead of the synthetic newlines
@@ -30,7 +64,7 @@
 ### Fixed
 
 - Experimental macOS support
-  * Fall back to `$0` when `/proc` is unavailable 
+  * Fall back to `$0` when `/proc` is unavailable
   * Rename the shell wrapper's `status` variable to `_buninu_status`; `status`
     is read-only in zsh, so the web terminal died the moment it connected on a
     default macOS shell
@@ -44,7 +78,7 @@
 
 - Sync bunmsh to 0.3.5
 - Sync jsgotty to 1.1.11
-  * Security fix CSWSH 
+  * Security fix CSWSH
 - Sync jsmdcui to 0.19.1
   * Security fix CSWSH for CDP server
 
