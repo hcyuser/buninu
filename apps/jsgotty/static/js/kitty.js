@@ -995,7 +995,14 @@
     return nativeRemoveEventListener.call(this, type, listener, options);
   };
 
-  const descriptor = Object.getOwnPropertyDescriptor(WebSocket.prototype, "onmessage");
+  // Walk the prototype chain to find the native onmessage descriptor.
+  // Safari/WebKit defines it on a parent prototype (e.g. EventTarget),
+  // not directly on WebSocket.prototype, so a single-level lookup fails.
+  let descriptor = null;
+  for (let proto = WebSocket.prototype; proto; proto = Object.getPrototypeOf(proto)) {
+    descriptor = Object.getOwnPropertyDescriptor(proto, "onmessage");
+    if (descriptor) break;
+  }
   Object.defineProperty(WebSocket.prototype, "onmessage", {
     configurable: true,
     enumerable: descriptor ? descriptor.enumerable : true,
@@ -1004,14 +1011,13 @@
     },
     set(handler) {
       this.__kittyOnMessage = handler;
-      if (!descriptor || !descriptor.set) {
-        return;
-      }
       if (typeof handler !== "function") {
-        descriptor.set.call(this, handler);
+        if (descriptor && descriptor.set) {
+          descriptor.set.call(this, handler);
+        }
         return;
       }
-      descriptor.set.call(this, function (event) {
+      const wrapped = function (event) {
         state.socket = this;
         inspectTerminalOutput(event.data);
         if (typeof event.data === "string" && event.data[0] === MSG_KITTY) {
@@ -1020,7 +1026,13 @@
           }
         }
         return handler.call(this, event);
-      });
+      };
+      if (descriptor && descriptor.set) {
+        descriptor.set.call(this, wrapped);
+      } else {
+        // Fallback: use addEventListener when no native setter is available.
+        this.addEventListener("message", wrapped);
+      }
     }
   });
 
