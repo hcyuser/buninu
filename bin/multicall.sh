@@ -8,7 +8,7 @@ else
   callerb=$(basename "$0")
 fi
 
-if [ "$callerb" = sh ] || [ "$callerb" = bunmsh ] ; then
+if [ "$callerb" = sh ] ; then
   callerb=$(basename "$0")
 fi
 
