@@ -385,7 +385,7 @@ for how it works):
   * `catfancy` — Pretty print a file with JSON, YAML, TOML, Markdown and JS/TS colored
   * `lsfancy` — List a directory with emoji, aware of the terminal width
   * `serve` — Serve a directory over HTTP
-  * `curl` — Transfer a URL over HTTP or HTTPS, built on Bun's `fetch`
+  * `curl` — Fetch an HTTP URL or download it to a file, built on Bun's `fetch`
   * `pspa` / `pspac` — List processes, plain or colored as shell syntax
   * `kill` — Signal a process, on Windows as well as POSIX
 
@@ -393,7 +393,7 @@ for how it works):
   are inside a bunmsh session, and every one of them documents itself with
   `--help`. From any other shell, reach them with
   `bunmsh -cc builtin <name> argv1 argv2 ...`.
-
+---
 - **Markdown applications**
   * `jsmdcui` — Run interactive Markdown applications in both TUI & WebUI
   * `jsmdcui --demo-reader` — Text-to-speech ebook reader
@@ -402,11 +402,11 @@ for how it works):
   * `jsmdcui --demo-maze` — Maze game
   * `jsmdcui --cdp-maze` — The same maze game, started with a local Chrome DevTools
     Protocol server and solved by the bundled solver three seconds later
-
+---
 - **Editing and viewing**
   * `jmi` — Edit files in the js micro editor
   * `glow` — View file contents with syntax highlighting
-
+---
 - **Terminal and file transfer**
   * `jsgotty` — Run a browser-accessible terminal
   * `showimg` — Show an image in the terminal
@@ -417,7 +417,7 @@ for how it works):
   necessarily under `--local`: they speak the Kitty graphics protocol and
   ZMODEM, which a plain terminal emulator need not support. They are
   equivalent to `jsgotty --viu`, `--rz` and `--sz`.
-
+---
 - **System integration**
   * `xclip` — X11-style clipboard tool; `-selection clipboard`/`-clip` bridges
     to the system clipboard
@@ -425,11 +425,12 @@ for how it works):
   * `xdg-open` — Open a file or URL with the platform's default handler
   * `native-bridge` — Call the Android host app (toast, clipboard, speak,
     WebViews) over `PKG_BRIDGE_SOCK`
-
+---
 - **Running programs**
+  * `bun` — Run the bundled Bun, falling back to one already on `PATH`
   * `bunx` — Globally install a package with bun, then exec its matching binary
   * `musl-la` — Launch AArch64 ELF programs with the bundled musl loader
-
+---
 - **Help**
   * `buninu-help` — Render README.md with glow, then show icon.png with `showimg`
 
