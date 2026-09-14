@@ -33,8 +33,9 @@ Buninu requires [Bun](https://bun.com). On Android, install Bun in Termux:
 npm install -g bun
 ```
 
-On Linux and Windows, follow the
+- On Linux, Windows, and macOS, follow the
 [official Bun installation guide](https://bun.com/docs/installation).
+  * macOS support is currently experimental
 
 ## Start
 
