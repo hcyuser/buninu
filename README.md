@@ -1,31 +1,43 @@
 # Buninu
 
+**BUNinu Is Not Unix** 🐮 ・ **幫你牛** 🐂 ・ **Bunに入魂** 🔥
+
 ![icon](https://raw.githubusercontent.com/jjtseng93/buninu/main/icon.png)
 
-> **Early development:** Buninu is still at an early stage of development.
-> Features, configuration, and command-line behavior may change between releases.
-> Linux, Android, and Windows can run the current early implementation, but
-> their support and portability behavior are still being tested and refined.
+Buninu is a portable, self-bootstrapping Unix-like userspace built on Bun. One
+command gives you a working shell — in a browser tab, or straight in the
+terminal you are already in — on Android, Linux, Windows, and macOS, with
+nothing to compile and nothing installed system-wide.
 
-- Buninu is a portable, self-bootstrapping Unix-like userspace built on Bun that runs across operating systems
+```sh
+npx buninu
+```
 
-- It starts a browser-accessible terminal through jsgotty. The architecture is
-  designed for Android, Linux, and Windows.
-
-- Name expansions:
-  * English: **BUNinu Is Not Unix** 🐮
-  * 中文：**幫你牛** 🐂
-  * 日本語：**Bunに入魂** 🔥
+> **Status:** Buninu is still under active development. The browser
+> terminal, the install-and-update flow, and the bundled commands are the
+> settled parts — Android and Linux first, with Windows working the same way
+> and macOS support newer. Still moving: `package.json` settings and
+> command-line flags can change between releases, and the local shell
+> (`--local`, bunmsh) has no job control yet, so use the browser terminal when
+> you need to background a job.
 
 - Source: [github.com/jjtseng93/buninu](https://github.com/jjtseng93/buninu)
 
 - Core components:
   * [jsgotty](https://github.com/jjtseng93/js-gotty): Remote shell from a Browser or Terminal
-  * [jsmdcui](https://github.com/jjtseng93/jsmdcui): Both a text editor and Markdown execution runtime (not static rendering) based on [bunmicro](https://github.com/jjtseng93/bunmicro)
-  * [bunmsh](https://github.com/jjtseng93/bunmsh): Bun Modern Shell. Not completed yet
+  * [jsmdcui](https://github.com/jjtseng93/jsmdcui): Both a text editor and
+    Markdown execution runtime (not static rendering), based on
+    [bunmicro](https://github.com/jjtseng93/bunmicro)
+  * [bunmsh](https://github.com/jjtseng93/bunmsh): Bun Modern Shell — a
+    dependency-free, mksh-inspired command shell with a JavaScript mode, and
+    builtins that answer the same way on Windows as on POSIX systems
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the complete architecture, portability model,
-and self-bootstrapping design.
+- [Why Buninu exists](#why)
+- [Table of contents](#contents)
+- [ARCHITECTURE.md](ARCHITECTURE.md): the complete architecture, portability
+  model, and self-bootstrapping design
+- [Commands inside the shell](#commands-inside-the-shell): the reference for a
+  session you are already in
 
 ## Install Bun
 
@@ -97,6 +109,14 @@ Drops you straight into [bunmsh](apps/bunmsh/README.md) (Bun Modern Shell), a
 dependency-free, mksh-inspired command shell that runs on Bun, without going
 through the browser/jsgotty flow.
 
+It is marked experimental for one reason above the rest: bunmsh has no job
+control yet. There is no `jobs`, `bg` or `fg`, and no suspending a command
+that is already running — a foreground command holds the terminal until it
+finishes on its own. Everything else a session needs is there: pipelines and
+redirection, functions and compound commands, history, completion with ghost
+suggestions, and a JavaScript mode. Reach for the browser terminal when you
+need to park a job and come back to it.
+
 To try it:
 
 ```sh
@@ -126,8 +146,8 @@ Or run it from a source checkout:
 bun ./bin/init.js --local
 ```
 
-Buninu's own tools (`rz`, `sz`, `showimg`, `tts`, `xdg-open`, `native-bridge`,
-etc.) stay available inside this shell too, same as in the browser session.
+Buninu's own tools (`glow`, `jmi`, `xclip`, `tts`, `xdg-open`, etc.) stay
+available inside this shell too, same as in the browser session.
 
 Unlike the shells the browser terminal starts, **bunmsh does not read
 `.bashrc`**. It does not claim complete POSIX behavior yet, so a startup file
@@ -284,17 +304,19 @@ alone.
 
 ## Security
 
-`scripts.start` binds jsgotty to `127.0.0.1` by default, so the terminal
-server only accepts connections from the same machine. It is not reachable
-from other devices on the network unless you explicitly opt in.
+**Buninu binds its terminal server to `127.0.0.1`**, so out of the box it
+only accepts connections from the machine it runs on. It is not reachable from
+other devices on the network unless you explicitly opt in.
 
-The terminal itself is writable (`-w`) and unauthenticated by default; only
-the loopback binding and jsgotty's random URL path (`-r`) stand between a
-local process and a shell with Buninu's permissions. To listen on another
-interface, forward `--address <value>` (see [Start](#start)); forwarded
-arguments override the flags baked into `scripts.start`. Also pass
-`--credential user:pass` when doing so, since the random port and URL path
-are not a substitute for authentication once the server is reachable from
+Within that machine, the terminal is writable (`-w`) and unauthenticated by
+default: only the loopback binding and jsgotty's random URL path (`-r`) stand
+between a local process and a shell with Buninu's permissions.
+
+To listen on another interface, pass `--address <value>` (see
+[Start](#start)). Arguments you give on the command line override the defaults
+the package ships in its `scripts.start` entry, the loopback binding included,
+so **pass `--credential user:pass` at the same time** — a random port and URL
+path are not a substitute for authentication once the server is reachable from
 outside the machine.
 
 ## Command-line usage
@@ -304,7 +326,7 @@ Everything else on the command line is forwarded to jsgotty.
 
 ```text
 -h, --help       Show command-line help
--V, --version    Show the Buninu, Bun, platform, and architecture versions
+-V, --version    Show the Buninu and Bun versions, plus platform and arch
 --readme         Render README.md in the terminal
 --changelog      Render CHANGELOG.md in the terminal
 --local          Start bunmsh in this terminal instead of a browser terminal
@@ -346,22 +368,60 @@ Once you are inside a running Buninu shell, these are available (the
 validated source list is `apps/cmdlist`; see [Add a command](#add-a-command)
 for how it works):
 
-```text
-glow          Render files with jsmdcui syntax highlighting
-jmi           Open files in the js micro editor
-jsgotty       Run a browser-accessible terminal
-jsmdcui       Edit and run interactive Markdown applications
-musl-la       Launch AArch64 ELF programs with the bundled musl loader
-buninu-help   Render README.md with glow, then show icon.png with jsgotty --viu
-bunx          Globally install a package with bun, then exec its matching binary
-native-bridge Call the Android host app (toast, clipboard, speak, WebViews) over PKG_BRIDGE_SOCK
-xclip         X11-style clipboard tool; -selection clipboard/-clip bridges to the system clipboard
-tts           Speak text and wait for it to finish (-a to not wait)
-showimg       Shorthand for jsgotty --viu
-rz            Upload a file over ZMODEM
-sz            Download a file over ZMODEM
-xdg-open      Open a file or URL with the platform's default handler
-```
+- **Bun Modern Shell & its builtins**
+  * `bunmsh` — Bun Modern Shell supports multi-tabs cwd
+  * `catfancy` — Pretty print a file with JSON, YAML, TOML, Markdown and JS/TS colored
+  * `lsfancy` — List a directory with emoji, aware of the terminal width
+  * `serve` — Serve a directory over HTTP
+  * `curl` — Transfer a URL over HTTP or HTTPS, built on Bun's `fetch`
+  * `pspa` / `pspac` — List processes, plain or colored as shell syntax
+  * `kill` — Signal a process, on Windows as well as POSIX
+
+  Everything below `bunmsh` is one of its builtins, so they are there once you
+  are inside a bunmsh session, and every one of them documents itself with
+  `--help`. From any other shell, reach them with
+  `bunmsh -cc builtin <name> argv1 argv2 ...`.
+
+- **Markdown applications**
+  * `jsmdcui` — Run interactive Markdown applications in both TUI & WebUI
+  * `jsmdcui --demo-reader` — Text-to-speech ebook reader
+  * `jsmdcui --demo-imgtool` — Image processor with table-based UI based on `Bun.Image`
+  * `jsmdcui --demo-imgtool-zh` — The same processor in Traditional Chinese
+  * `jsmdcui --demo-maze` — Maze game
+  * `jsmdcui --cdp-maze` — The same maze game, started with a local Chrome DevTools
+    Protocol server and solved by the bundled solver three seconds later
+
+- **Editing and viewing**
+  * `jmi` — Edit files in the js micro editor
+  * `glow` — View file contents with syntax highlighting
+
+- **Terminal and file transfer**
+  * `jsgotty` — Run a browser-accessible terminal
+  * `showimg` — Show an image in the terminal
+  * `rz` — Upload a file over ZMODEM
+  * `sz` — Download a file over ZMODEM
+
+  These three work in the browser route, a minapk WebView included, but not
+  necessarily under `--local`: they speak the Kitty graphics protocol and
+  ZMODEM, which a plain terminal emulator need not support. They are
+  equivalent to `jsgotty --viu`, `--rz` and `--sz`.
+
+- **System integration**
+  * `xclip` — X11-style clipboard tool; `-selection clipboard`/`-clip` bridges
+    to the system clipboard
+  * `tts` — Speak text and wait for it to finish (`-a` to not wait)
+  * `xdg-open` — Open a file or URL with the platform's default handler
+  * `native-bridge` — Call the Android host app (toast, clipboard, speak,
+    WebViews) over `PKG_BRIDGE_SOCK`
+
+- **Running programs**
+  * `bunx` — Globally install a package with bun, then exec its matching binary
+  * `musl-la` — Launch AArch64 ELF programs with the bundled musl loader
+
+- **Help**
+  * `buninu-help` — Render README.md with glow, then show icon.png with `showimg`
+
+### Details for the above commands
 
 `buninu-help` renders README.md with jsmdcui's `--cat` mode and then shows
 `icon.png` with jsgotty's `--viu`. It is the command the default startup
@@ -388,7 +448,7 @@ for use from a `js back` block.
 `currWebView()` (short: `openwv`, `evalwv`, `showwv`, `currwv`) drive the host
 app's WebViews. There are exactly two, both
 alive from startup and neither ever created nor closed at runtime: id `0` is
-the console -- the jsgotty terminal this shell is rendered in -- and id `1` is
+the console — the jsgotty terminal this shell is rendered in — and id `1` is
 the app WebView, which starts out blank and behind. Anywhere an id is taken,
 `-1` means whichever WebView is in front right now.
 
@@ -430,7 +490,7 @@ Windows, and Linux/Wayland. jsmdcui picks this up automatically once it's on
 `PATH`, so its middle-click paste and copy/paste commands just work.
 
 `tts <text> [-f|--flush] [-a|--async] [--timeout <ms>] [--pitch <n>]
-[--speed <n>]` speaks text and, by default, blocks until it finishes -- no
+[--speed <n>]` speaks text and, by default, blocks until it finishes — no
 timeout unless you pass `--timeout`. Works on Android, macOS, Windows, and
 Linux (via espeak-ng/espeak). `--pitch`/`--speed` fall back to
 `$TTS_PITCH`/`$TTS_SPEED` when not given explicitly, so jsmdcui's own
@@ -458,7 +518,7 @@ MINAPK_WEBVIEW=1 xdg-open https://example.com
 export MINAPK_WEBVIEW=1
 ```
 
-`0` is the console, so it navigates the terminal page away -- the back key
+`0` is the console, so it navigates the terminal page away — the back key
 returns to it and jsgotty reconnects, but it is not usually what you want.
 `-1` is whichever WebView is in front. Only URLs are redirected: a file path
 always goes to the host's own handler, since WebView cannot read a `file://`
@@ -475,15 +535,20 @@ own projects ship.
 
 ### The bundled jsmdcui
 
-  * Is configured editor-first by MDCUI_DEFAULT_EDIT
-  * The command `jmi` with a Markdown file opens the normal terminal editor.(js micro editor)
-  * The command `jsmdcui` preserves its original behavior: `apps/jsmdcui/jsmdcui.sh`, which starts its `tui` entry point with `--mdcui` when running markdown Apps, and forwards all command-line arguments.
-  * Adds the Buninu-only `# syntax: markdown` marker for Markdown highlighting in extensionless files; upstreaming may be considered later.
+  * Is configured editor-first by `MDCUI_DEFAULT_EDIT`
+  * The command `jmi` with a Markdown file opens the normal terminal editor
+    (js micro editor)
+  * The command `jsmdcui` preserves its original behavior:
+    `apps/jsmdcui/jsmdcui.sh`, which starts its `tui` entry point with
+    `--mdcui` when running Markdown apps, and forwards all command-line
+    arguments
+  * Adds the Buninu-only `# syntax: markdown` marker for Markdown highlighting
+    in extensionless files; upstreaming may be considered later
 
 ### The bundled jsgotty
 
-  * No longer depends on or ships `node-pty`. 
-  * Its PTY is provided by Bun's terminal API.
+  * No longer depends on or ships `node-pty`
+  * Its PTY is provided by Bun's terminal API
 
 ## Export
 
@@ -625,6 +690,29 @@ call "%~dp0bun.bat" "%~dp0..\apps\hello\hello.js" %*
 exit /b %ERRORLEVEL%
 ```
 
+### Platform-specific binaries
+
+A bundled binary that only runs on one platform and architecture carries a
+two-letter suffix: the platform first, then the architecture.
+
+| Suffix | Platform | Architecture |
+|---|---|---|
+| `la` | Linux | arm64 |
+| `lx` | Linux | x64 |
+| `aa` | Android | arm64 |
+| `wx` | Windows | x64 |
+| `ma` | macOS | arm64 |
+
+So `bin/bun.sh` picks `bun-la`, `bun-lx` or `bun-wx.exe` for the machine it
+finds itself on, and `musl-la` is the Linux/arm64 ELF loader — on any other
+platform there is nothing for it to load. A name without a suffix is
+portable: `hello.js` above runs wherever Bun does.
+
+One binary is deliberately outside the scheme. `bin/libsh-loader.so` is
+Android/arm64 and would otherwise be `-aa`, but Android extracts and executes
+only files named `lib*.so` from an APK's native library directory, so that
+name belongs to the platform rather than to this convention.
+
 ## Startup command (optional)
 
 Set `buninu.command.default` or a platform-specific value (`android`, `linux`,
@@ -751,7 +839,7 @@ and running behind it. Set it to `false` and back leaves the app instead.
 
 This one is read by the host app, not by Buninu itself, so it does nothing
 outside an APK built with
-[minapk](https://www.npmjs.com/package/@drxiaozhi/minapk) -- where it can also
+[minapk](https://www.npmjs.com/package/@drxiaozhi/minapk) — where it can also
 be set for a single build with `--no-back-to-console`. The host treats a
 missing, unreadable, or non-boolean value as `true`, so nothing here can fail
 in a way that leaves the back key broken.
@@ -815,3 +903,95 @@ words, and `pspac` is two commands joined by `;` with a redirection in the
 first, so it cannot be one — but the builtin of that name is already there, and
 an alias that fails to define leaves it reachable. See
 [Start a local shell in a Terminal](#start-a-local-shell-in-a-terminal-experimental).
+
+## Why
+
+- The usual way to get a Unix
+  environment onto a machine
+  * A system package manager
+  * A compiler
+  * On Android or Windows,
+    you install Linux first:
+    WSL, or a proot distro
+
+- Buninu's way: everything it
+  needs is JavaScript on Bun
+  * Nothing to build
+  * Nothing installed
+    system-wide
+  * The bundled jsgotty
+    dropped `node-pty` for
+    Bun's own terminal API
+  * So the same tree runs
+    unchanged on a phone, a
+    laptop and a server
+
+- Not a bare runtime either
+  * An editor and Markdown
+    runtime
+  * A clipboard tool
+  * Text-to-speech
+  * ZMODEM file transfer
+  * An `xdg-open` that knows
+    each platform's real
+    handler
+
+- An installation is one
+  directory
+  * Yours to edit
+  * Copy it to another machine
+    and your shell, the
+    commands you added and
+    your history go with it
+  * Your own `$HOME` is never
+    touched — a shell started
+    here still finds your SSH
+    keys and Git configuration
+
+## Contents
+
+- [Install Bun](#install-bun)
+- [Start](#start)
+  * [Start a remote shell in a Browser](#start-a-remote-shell-in-a-browser)
+  * [Start a local shell in a Terminal (experimental)](#start-a-local-shell-in-a-terminal-experimental)
+- [Data & Persistence](#data--persistence)
+- [Install and update](#install-and-update)
+- [Security](#security)
+- [Command-line usage](#command-line-usage)
+  * [Launching a bundled app directly](#launching-a-bundled-app-directly)
+- [Commands inside the shell](#commands-inside-the-shell)
+- [Differences from upstream](#differences-from-upstream)
+- [Export](#export)
+- [Environment](#environment)
+- [Add a command](#add-a-command)
+  * [Platform-specific binaries](#platform-specific-binaries)
+- [Startup command (optional)](#startup-command-optional)
+- [Shell selection (optional)](#shell-selection-optional)
+- [Data directory (optional)](#data-directory-optional)
+- [Back key (Android, optional)](#back-key-android-optional)
+- [Process-list helpers](#process-list-helpers)
+- [Why](#why)
+- [License](#license)
+
+## License
+
+Buninu's own code is MIT — see [LICENSE](LICENSE).
+
+The apps bundled under `apps/` are separate projects on their own terms, and
+each carries its licence with it:
+
+| App | Licence | Files under `apps/<app>/` |
+|---|---|---|
+| jsgotty | MIT; its bundled front-end libraries are MIT and Apache-2.0 | `LICENSE`, `NOTICE`, `LICENSES/`, `static/js/gotty.licenses.txt` |
+| jsmdcui | MIT | `LICENSE`, `runtime/syntax/LICENSE` |
+| bunmsh | MIT; mksh's own terms are not relicensed under it | `LICENSE`, `LICENSE-MKSH`, `LICENSE-MICRO` |
+| musl-la | MIT for musl itself, and see below | `LICENSE_musl.txt`, `NOTICE`, `LICENSES/` |
+
+One component is worth naming here rather than leaving in a file to be found:
+`apps/musl-la` ships `libgcc_s.so.1` and `libstdc++.so.6`, built from GCC
+14.2.0, under **GPL-3.0 with the GCC Runtime Library Exception**. That
+exception is what lets them be distributed alongside code under any licence,
+so nothing here changes Buninu's own MIT terms — but if your organisation
+screens for GPL, this is the component it will find. `apps/musl-la/NOTICE`
+records the exact build, its Corresponding Source, and SHA-256 sums for every
+binary in that directory.
