@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.4.7 - 2026-09-14
+
+### Fixed
+
+- `showimg` in a browser terminal
+  * Bind the scroll and render listeners before decoding the image rather than
+    after it. The server sends the placement ahead of the synthetic newlines
+    that scroll room for the image, so that scroll could land while the decode
+    was still running and the very first image of a session had no listener to
+    correct it -- it came out blank while every later image was fine
+  * Re-run the layout once the image element has actually loaded
+  * Lay placements out against xterm's own geometry until the client's first
+    resize message arrives, instead of against the 80x24 placeholder
+  * Let the terminal size settle for up to 400ms before emitting an image. A
+    window that was just opened, restored, resized or rotated reports a couple
+    of columns for a few hundred milliseconds, and an image sized against that
+    was emitted as a one-cell speck -- indistinguishable from the command
+    having printed nothing -- while the next run in the same session was correct
+  * Walk the prototype chain for the native `WebSocket.onmessage` descriptor.
+    Safari/WebKit defines it on a parent prototype rather than on
+    `WebSocket.prototype`, so the single-level lookup found nothing and image
+    messages were never processed; fall back to `addEventListener` when no
+    native setter is available
+  * Thanks @hcyuser for the contribution! (#3)
+
 ## 0.4.6 - 2026-09-14
 
 ### Fixed

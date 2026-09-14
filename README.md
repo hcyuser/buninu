@@ -17,6 +17,8 @@
   * 中文：**幫你牛** 🐂
   * 日本語：**Bunに入魂** 🔥
 
+- Source: [github.com/jjtseng93/buninu](https://github.com/jjtseng93/buninu)
+
 - Core components:
   * [jsgotty](https://github.com/jjtseng93/js-gotty): Remote shell from a Browser or Terminal
   * [jsmdcui](https://github.com/jjtseng93/jsmdcui): Both a text editor and Markdown execution runtime (not static rendering) based on [bunmicro](https://github.com/jjtseng93/bunmicro)
