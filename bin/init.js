@@ -23,31 +23,73 @@ Usage:
   ${pkg.name} [init options] [jsgotty options]
 
 Init options:
-  --local                Start Buninu in this terminal instead of a remote
-                          shell reached from a browser
-  -h, --help             Show this help and exit
-  -V, --version          Show version and runtime information, then exit
-  --readme               Render README.md in the terminal and exit
-  --changelog            Render CHANGELOG.md in the terminal and exit
-  --readme-tui           Open README.md as a navigable terminal UI and exit
-  --readme-wui           Serve README.md as a navigable Web UI and exit
-  --export [output.tgz]  Export this Buninu installation (default: ./buninu.tgz)
-  --export-config [output.json]  Export this package.json (default: ./buninu.json)
-  -i, --install [dir]    Install this package into <dir>/${pkg.name} (default: .)
-  -si, --strip-install [dir]  Install into <dir> directly, without a
-                          top-level directory of its own
-                          (--install --help shows the full install options)
-  --shell <path|name>    Override buninu.shell for this run
-  --command <command>    Override buninu.command for this run
+  --local
+    Start Buninu in this terminal
+      instead of a Remote Shell
+      reached from a browser
+      (via jsgotty, the default)
 
-Direct app launch (must be the first argument; skips the shell/command
-startup flow entirely):
-  --jsgotty [args...]    Spawn jsgotty directly, forwarding remaining
-                          arguments, and exit with its exit code
-                          (--jsgotty --help shows jsgotty's own options)
-  --jsmdcui [args...]    Spawn jsmdcui directly, same forwarding behavior
-  --bunmsh [args...]     Spawn bunmsh directly, same forwarding behavior
-  --musl-la [args...]    Spawn musl-la directly, same forwarding behavior
+  -h, --help
+    Show this help and exit
+  -V, --version
+    Show version & runtime info, then exit
+
+  --readme
+    Render README.md in the terminal and exit
+  --changelog
+    Render CHANGELOG.md in the terminal and exit
+
+  --readme-tui
+    Open README.md as a Terminal UI
+  --readme-wui
+    Serve README.md as a Web UI
+
+  --export [output.tgz]
+    Export this Buninu installation
+    (default: ./buninu.tgz)
+
+  --export-config [output.json]
+    Export Buninu's package.json
+    (default: ./buninu.json)
+
+Install options:
+  -i, --install [dir]    
+    Install this package into <dir>/${pkg.name}
+    (default: .)
+
+  -si, --strip-install [dir]  
+    Install into <dir> directly
+    Without a top-level directory of its own
+      
+  (--install --help for full options)
+  
+Remote Shell options:
+  --shell <path|name>
+    Override buninu.shell for this run
+  --command <command>
+    Override buninu.command for this run
+
+Direct app launch
+(must be the first argument)
+(skips the shell/command startup flow entirely):
+
+  --jsgotty [args...]    
+    Spawn jsgotty directly,
+      forwarding remaining arguments,
+      and exit with its exit code
+  (--jsgotty --help = jsgotty options)
+  
+  --jsmdcui [args...]
+    Spawn jsmdcui directly, 
+      same forwarding behavior
+      
+  --bunmsh [args...]
+    Spawn bunmsh directly, 
+      same forwarding behavior
+      
+  --musl-la [args...]
+    Spawn musl-la directly,
+      same forwarding behavior
 
 Package configuration:
   package.json contains a buninu section for default and platform settings.
