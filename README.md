@@ -434,7 +434,7 @@ upstream — without it, install is killed by SIGSYS (Android's seccomp policy
 rejects a syscall bin-linking uses), so `bunx` can't install anything there yet.
 
 `native-bridge [func] [args...]` calls into the Android host app that
-[minapk](https://www.npmjs.com/package/@drxiaozhi/minapk) built the running
+[minapk](https://github.com/jjtseng93/minapk) built the running
 APK with, over an abstract-namespace unix socket. A bare `native-bridge`
 lists what the host implements. Every call
 times out after 5 seconds instead of hanging; outside such an APK, every call
@@ -839,7 +839,7 @@ and running behind it. Set it to `false` and back leaves the app instead.
 
 This one is read by the host app, not by Buninu itself, so it does nothing
 outside an APK built with
-[minapk](https://www.npmjs.com/package/@drxiaozhi/minapk) — where it can also
+[minapk](https://github.com/jjtseng93/minapk) — where it can also
 be set for a single build with `--no-back-to-console`. The host treats a
 missing, unreadable, or non-boolean value as `true`, so nothing here can fail
 in a way that leaves the back key broken.
