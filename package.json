@@ -5,6 +5,29 @@
   "type": "module",
   "main": "./bin/init.js",
   "license": "MIT",
+  "author": "Dr. John (醫者小智)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jjtseng93/buninu.git"
+  },
+  "homepage": "https://github.com/jjtseng93/buninu#readme",
+  "bugs": {
+    "url": "https://github.com/jjtseng93/buninu/issues"
+  },
+  "keywords": [
+    "bun",
+    "terminal",
+    "web-terminal",
+    "browser-terminal",
+    "shell",
+    "userspace",
+    "portable",
+    "cross-platform",
+    "android",
+    "termux",
+    "pty",
+    "self-bootstrapping"
+  ],
   "bin": {
     "buninu": "bin/init.js"
   },
