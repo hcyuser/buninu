@@ -20,8 +20,31 @@
     touchScroll: null,
     contextMenu: null,
     imageContextBound: false,
-    socket: null
+    socket: null,
+    // False until the client has sent its first resize. Until then cols/rows
+    // above are placeholders, not the PTY's real geometry.
+    sizeFromClient: false
   };
+
+  //  The PTY size only reaches us through the resize messages the client
+  //  sends. A placement that arrives before the first of those would be laid
+  //  out against 80x24 instead of the terminal the user is looking at, so
+  //  borrow xterm's own geometry until the real size shows up.
+  function syncViewerSize() {
+    if (state.sizeFromClient) {
+      return;
+    }
+    const xterm = terminal && terminal.__gottyXterm;
+    if (!xterm) {
+      return;
+    }
+    if (Number.isFinite(xterm.cols) && xterm.cols > 0) {
+      state.cols = xterm.cols;
+    }
+    if (Number.isFinite(xterm.rows) && xterm.rows > 0) {
+      state.rows = xterm.rows;
+    }
+  }
 
   function browserTerminalState() {
     const xterm = terminal && terminal.__gottyXterm;
@@ -152,6 +175,7 @@
   }
 
   function createPlacementMarker(cursor) {
+    syncViewerSize();
     const xterm = terminal && terminal.__gottyXterm;
     if (!xterm || typeof xterm.registerMarker !== "function") {
       return null;
@@ -372,6 +396,7 @@
       return;
     }
     const { control, cursor, intrinsicWidth, intrinsicHeight, sourceRect } = node.__kittyPlacement;
+    syncViewerSize();
     const metrics = cellMetrics();
     const anchor = anchorOffset();
     const controlCols = Math.max(0, Number.parseInt(control.c || "0", 10) || 0);
@@ -825,6 +850,17 @@
     const generation = (node.__kittyGeneration || 0) + 1;
     node.__kittyGeneration = generation;
 
+    //  Bind before the decode, not after it. The server sends the placement
+    //  ahead of the synthetic newlines that scroll room for the image, so the
+    //  scroll this layout depends on can land while we are still decoding.
+    //  Binding afterwards left the very first image of a session with no
+    //  listener to correct it, which is why it could come out blank while
+    //  every later image in the same session was fine.
+    bindViewportScroll();
+    bindTerminalRender();
+    bindTouchScrolling();
+    bindImageContextMenu();
+
     const asset = await resolveImageAsset(message.image, control);
     if (!asset || node.__kittyGeneration !== generation) {
       return;
@@ -839,11 +875,14 @@
       intrinsicHeight: asset.height,
       sourceRect: asset.sourceRect,
     };
-    node.__kittyImageElement.src = objectUrl;
-    bindViewportScroll();
-    bindTerminalRender();
-    bindTouchScrolling();
-    bindImageContextMenu();
+    const imageElement = node.__kittyImageElement;
+    imageElement.onload = () => {
+      imageElement.onload = null;
+      if (node.__kittyGeneration === generation) {
+        layoutNode(node);
+      }
+    };
+    imageElement.src = objectUrl;
     layoutNode(node);
   }
 
@@ -1046,9 +1085,11 @@
         const resize = JSON.parse(data.slice(1));
         if (resize.columns) {
           state.cols = resize.columns;
+          state.sizeFromClient = true;
         }
         if (resize.rows) {
           state.rows = resize.rows;
+          state.sizeFromClient = true;
         }
       } catch (error) {
         // ignore
