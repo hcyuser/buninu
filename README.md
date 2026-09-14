@@ -173,7 +173,7 @@ Until bunmsh reads a startup file of its own, sourcing it by hand is the way.
 
 ## Security
 
-**Buninu binds its terminal server to `127.0.0.1`**, so out of the box it
+**Buninu (when starting a remote shell) binds its terminal server to `127.0.0.1`**, so out of the box it
 only accepts connections from the machine it runs on. It is not reachable from
 other devices on the network unless you explicitly opt in.
 
@@ -194,23 +194,59 @@ These are flags to `bin/init.js` itself, resolved before Buninu starts.
 Everything else on the command line is forwarded to jsgotty.
 
 ```text
---local          Start Buninu in this terminal instead of a remote shell
-                 reached from a browser
--h, --help       Show command-line help
--V, --version    Show the Buninu and Bun versions, plus platform and arch
---readme         Render README.md in the terminal
---changelog      Render CHANGELOG.md in the terminal
---readme-tui     Open README.md as a navigable terminal UI
---readme-wui     Serve README.md as a navigable Web UI
+Init options:
+  --local
+    Start Buninu in this terminal
+      instead of a Remote Shell
+      reached from a browser
+      (via jsgotty, the default)
 
--i,  --install [dir]        Install into <dir>/buninu (default: .)
--si, --strip-install [dir]  Install into <dir> itself
---export [output.tgz]       Export this installation as a tarball
---export-config [out.json]  Export this package.json
+  -h, --help
+    Show this help and exit
+  -V, --version
+    Show version & runtime info, then exit
 
---shell <path|name>   Override buninu.shell for this run
---command <command>   Override buninu.command for this run
+  --readme
+    Render README.md in the terminal and exit
+  --changelog
+    Render CHANGELOG.md in the terminal and exit
+
+  --readme-tui
+    Open README.md as a Terminal UI
+  --readme-wui
+    Serve README.md as a Web UI
+
+  --export [output.tgz]
+    Export this Buninu installation
+    (default: ./buninu.tgz)
+
+  --export-config [output.json]
+    Export Buninu's package.json
+    (default: ./buninu.json)
+
+Install options:
+  -i, --install [dir]
+    Install this package into <dir>/buninu
+    (default: .)
+
+  -si, --strip-install [dir]
+    Install into <dir> directly
+    Without a top-level directory of its own
+
+  (--install --help for full options)
+
+Remote Shell options:
+  --shell <path|name>
+    Override buninu.shell for this run
+  --command <command>
+    Override buninu.command for this run
 ```
+
+`--local` is the one flag here that changes what Buninu starts rather than
+what it reports; [Start a local shell in a
+Terminal](#start-a-local-shell-in-a-terminal-experimental) covers what that
+session can and cannot do, and [Start](#start) covers the browser route it
+replaces.
 
 `--readme-tui` and `--readme-wui` hand README.md to jsmdcui, so its headings
 and its table of contents become links you can follow rather than text you
@@ -220,11 +256,17 @@ files beside it, so Buninu copies README.md into a directory under `TMPDIR`
 first and runs it there: an installation stays yours, and nothing generated
 ends up in an `--export` or outliving an update.
 
+`--export` and `--export-config` are described under [Export](#export), which
+also covers what an archive made through `npx` contains and what one made from
+your own installation does instead.
+
 `--install --help` lists the install options in full, including `--force` and
 `--yes`; see [Install and update](#install-and-update) for what an update does
-with files you changed. The other groups are covered by
-[Start](#start), [Export](#export), [Shell selection](#shell-selection-optional)
-and [Startup command](#startup-command-optional).
+with files you changed.
+
+`--shell` and `--command` override for one run what
+[Shell selection](#shell-selection-optional) and
+[Startup command](#startup-command-optional) set in `package.json`.
 
 ### Launching a bundled app directly
 
@@ -233,10 +275,23 @@ bypasses the shell and startup-command flow entirely: it spawns that app with
 every remaining argument forwarded to it, and exits with its exit code.
 
 ```text
---jsgotty [args...]  Spawn jsgotty directly and exit with its exit code
---jsmdcui [args...]  Spawn jsmdcui directly and exit with its exit code
---bunmsh [args...]   Spawn bunmsh directly and exit with its exit code
---musl-la [args...]  Spawn musl-la directly and exit with its exit code
+  --jsgotty [args...]
+    Spawn jsgotty directly,
+      forwarding remaining arguments,
+      and exit with its exit code
+  (--jsgotty --help = jsgotty options)
+
+  --jsmdcui [args...]
+    Spawn jsmdcui directly,
+      same forwarding behavior
+
+  --bunmsh [args...]
+    Spawn bunmsh directly,
+      same forwarding behavior
+
+  --musl-la [args...]
+    Spawn musl-la directly,
+      same forwarding behavior
 ```
 
 Use it to reach an app's own options, which Buninu would otherwise interpret
