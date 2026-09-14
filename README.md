@@ -380,7 +380,9 @@ rather than this one.
 Once you are inside a running Buninu shell, these are available (the
 validated source list is `apps/cmdlist`; see [Add a command](#add-a-command)
 for how it works):
+
 ---
+
 - **Bun Modern Shell & its builtins**
   * `bunmsh` — Bun Modern Shell supports multi-tabs cwd
   * `catfancy` — Pretty print a file with JSON, YAML, TOML, Markdown and JS/TS colored
@@ -394,7 +396,9 @@ for how it works):
   are inside a bunmsh session, and every one of them documents itself with
   `--help`. From any other shell, reach them with
   `bunmsh -cc builtin <name> argv1 argv2 ...`.
+
 ---
+
 - **Markdown applications**
   * `jsmdcui` — Run interactive Markdown applications in both TUI & WebUI
   * `jsmdcui --demo-reader` — Text-to-speech ebook reader
@@ -403,11 +407,15 @@ for how it works):
   * `jsmdcui --demo-maze` — Maze game
   * `jsmdcui --cdp-maze` — The same maze game, started with a local Chrome DevTools
     Protocol server and solved by the bundled solver three seconds later
+
 ---
+
 - **Editing and viewing**
   * `jmi` — Edit files in the js micro editor
   * `glow` — View file contents with syntax highlighting
+
 ---
+
 - **Terminal and file transfer**
   * `jsgotty` — Run a browser-accessible terminal
   * `showimg` — Show an image in the terminal
@@ -418,7 +426,9 @@ for how it works):
   necessarily under `--local`: they speak the Kitty graphics protocol and
   ZMODEM, which a plain terminal emulator need not support. They are
   equivalent to `jsgotty --viu`, `--rz` and `--sz`.
+
 ---
+
 - **System integration**
   * `xclip` — X11-style clipboard tool; `-selection clipboard`/`-clip` bridges
     to the system clipboard
@@ -426,26 +436,131 @@ for how it works):
   * `xdg-open` — Open a file or URL with the platform's default handler
   * `native-bridge` — Call the Android host app (toast, clipboard, speak,
     WebViews) over `PKG_BRIDGE_SOCK`
+
 ---
+
 - **Running programs**
   * `bun` — Run the bundled Bun, falling back to one already on `PATH`
   * `bunx` — Globally install a package with bun, then exec its matching binary
   * `musl-la` — Launch AArch64 ELF programs with the bundled musl loader
+
 ---
+
 - **Help**
   * `buninu-help` — Render README.md with glow, then show icon.png with `showimg`
 
 ### Details for the above commands
 
-`buninu-help` renders README.md with jsmdcui's `--cat` mode and then shows
-`icon.png` with jsgotty's `--viu`. It is the command the default startup
-greeting points to.
+`rz [target-dir]` (upload into `target-dir`, default: cwd) and `sz <file>
+[more files...]` (download one or more files) are thin `bin/`-only wrappers
+around `apps/jsgotty/rz.js`/`sz.js`, transferring files over ZMODEM through
+the same terminal connection jsgotty already renders in a browser or WebView.
+
+---
+
+`xclip [-o] [-selection primary|clipboard] [-clip]` is a small X11-`xclip`-
+compatible clipboard tool. `-selection primary` (the default) never touches
+the system clipboard, matching real X11 semantics. `-selection
+clipboard`/`-clip` reaches the real system clipboard on Android, macOS,
+Windows, and Linux/Wayland. jsmdcui picks this up automatically once it's on
+`PATH`, so its middle-click paste and copy/paste commands just work.
+
+---
+
+`tts <text> [-f|--flush] [-a|--async] [--timeout <ms>] [--pitch <n>]
+[--speed <n>]` speaks text and, by default, blocks until it finishes — no
+timeout unless you pass `--timeout`. Works on Android, macOS, Windows, and
+Linux (via espeak-ng/espeak). `--pitch`/`--speed` fall back to
+`$TTS_PITCH`/`$TTS_SPEED` when not given explicitly, so jsmdcui's own
+pitch/speed setting is honored automatically.
+
+---
+
+`glow` and `jmi` are the same program under two names: both run the bundled
+jsmdcui, `glow` with its `--cat` mode, which renders a file to stdout and
+exits, and `jmi` with no mode of its own, which opens the editor because this
+jsmdcui is configured editor-first through `MDCUI_DEFAULT_EDIT`. Neither is
+the Go program called glow — `glow --help` and `jmi --help` both print
+jsmdcui's own reference, and jsmdcui's options are the ones that apply.
+
+---
+
+`bun` is the installation's own Bun rather than whatever the machine has. On
+Android it runs `androidNativeLibs/libbun.so` when an APK supplies one;
+otherwise it picks the binary for the machine — `bun-la`, `bun-lx`, or
+`bun-wx.exe` — and extracts it from `apps/bun/bunBin.tgz` first whenever that
+archive is newer than the binary already sitting there. Only when none of
+those is available does it fall back to a Bun on `PATH`, skipping its own
+directory on the way so the `bun` symlink beside it cannot call itself. This
+is what lets an installation carry the runtime it needs with it.
+
+---
 
 `bunx <package>[@version] [args...]` installs with `bun i -g` and runs the
 matching binary. On Android, the underlying `bun i -g` currently needs
 [oven-sh/bun#39084](https://github.com/oven-sh/bun/pull/39084) merged
 upstream — without it, install is killed by SIGSYS (Android's seccomp policy
 rejects a syscall bin-linking uses), so `bunx` can't install anything there yet.
+
+---
+
+`buninu-help` renders README.md with `jmi`'s `--cat` mode — the same rendering
+`glow` gives — and then shows `icon.png` with `showimg`. It is the command the
+default startup greeting points to.
+
+Reach that mode as `jmi --cat` or as plain `glow`, not as `jsmdcui --cat`. The
+`jsmdcui` launcher routes any `.md` argument into the Markdown UI, and opening
+a file that way writes five generated files beside it rather than only
+printing it.
+
+---
+
+`musl-la [-e] <program> [args...]` runs an AArch64 Linux ELF program through
+the bundled musl loader, which is what lets a binary built against musl run
+inside a Buninu session. It is AArch64-only, as its suffix says — see
+[Platform-specific binaries](#platform-specific-binaries) — and the loader it
+uses is the APK's `libld-musl.so` when one is present, or
+`apps/musl-la/ld-musl-aarch64.so.1` otherwise.
+
+The library path is assembled for you. `musl-la` scans its arguments for the
+first file whose leading four bytes are the ELF magic number, and puts that
+file's own directory on the search path along with `apps/musl-la/` and
+anything already in `LD_LIBRARY_PATH` — so a program with its shared objects
+beside it needs no setup. That path normally reaches the loader as
+`--library-path`; pass `-e` as the first argument to export it as
+`LD_LIBRARY_PATH` instead, which is what a program that goes on to exec
+something else of its own needs.
+
+---
+
+`xdg-open <file-or-url>` hands a file or URL to whatever the platform treats
+as its default handler: the host app through native-bridge on Android (or
+`termux-open` under plain Termux), `open` on macOS, `start` on Windows, and
+the real system `xdg-open` on Linux.
+
+Inside minapk's APK, `MINAPK_WEBVIEW` redirects that: set it to a WebView id
+and a URL is loaded into that WebView and brought to the front (`openWebView`
+then `showWebView`) instead of being handed to the system's default handler.
+
+```sh
+# In the app WebView, on screen
+MINAPK_WEBVIEW=1 xdg-open https://example.com
+
+# ...or for the whole session
+export MINAPK_WEBVIEW=1
+```
+
+`0` is the console, so it navigates the terminal page away — the back key
+returns to it and jsgotty reconnects, but it is not usually what you want.
+`-1` is whichever WebView is in front. Only URLs are redirected: a file path
+always goes to the host's own handler, since WebView cannot read a `file://`
+URL under Buninu's home (`setAllowFileAccess` is false from API 30 on) while
+the host serves that same file through its content:// provider. A value that
+is not a plain integer is reported on stderr and ignored rather than guessed
+at, an unset or empty value keeps the default behavior, and a WebView the host
+does not have falls back to the default handler after saying so.
+
+---
 
 `native-bridge [func] [args...]` calls into the Android host app that
 [minapk](https://github.com/jjtseng93/minapk) built the running
@@ -495,52 +610,6 @@ native-bridge showwv 1
 native-bridge evalwv 1 document.title
 native-bridge currwv
 ```
-
-`xclip [-o] [-selection primary|clipboard] [-clip]` is a small X11-`xclip`-
-compatible clipboard tool. `-selection primary` (the default) never touches
-the system clipboard, matching real X11 semantics. `-selection
-clipboard`/`-clip` reaches the real system clipboard on Android, macOS,
-Windows, and Linux/Wayland. jsmdcui picks this up automatically once it's on
-`PATH`, so its middle-click paste and copy/paste commands just work.
-
-`tts <text> [-f|--flush] [-a|--async] [--timeout <ms>] [--pitch <n>]
-[--speed <n>]` speaks text and, by default, blocks until it finishes — no
-timeout unless you pass `--timeout`. Works on Android, macOS, Windows, and
-Linux (via espeak-ng/espeak). `--pitch`/`--speed` fall back to
-`$TTS_PITCH`/`$TTS_SPEED` when not given explicitly, so jsmdcui's own
-pitch/speed setting is honored automatically.
-
-`rz [target-dir]` (upload into `target-dir`, default: cwd) and `sz <file>
-[more files...]` (download one or more files) are thin `bin/`-only wrappers
-around `apps/jsgotty/rz.js`/`sz.js`, transferring files over ZMODEM through
-the same terminal connection jsgotty already renders in a browser or WebView.
-
-`xdg-open <file-or-url>` hands a file or URL to whatever the platform treats
-as its default handler: the host app through native-bridge on Android (or
-`termux-open` under plain Termux), `open` on macOS, `start` on Windows, and
-the real system `xdg-open` on Linux.
-
-Inside minapk's APK, `MINAPK_WEBVIEW` redirects that: set it to a WebView id
-and a URL is loaded into that WebView and brought to the front (`openWebView`
-then `showWebView`) instead of being handed to the system's default handler.
-
-```sh
-# In the app WebView, on screen
-MINAPK_WEBVIEW=1 xdg-open https://example.com
-
-# ...or for the whole session
-export MINAPK_WEBVIEW=1
-```
-
-`0` is the console, so it navigates the terminal page away — the back key
-returns to it and jsgotty reconnects, but it is not usually what you want.
-`-1` is whichever WebView is in front. Only URLs are redirected: a file path
-always goes to the host's own handler, since WebView cannot read a `file://`
-URL under Buninu's home (`setAllowFileAccess` is false from API 30 on) while
-the host serves that same file through its content:// provider. A value that
-is not a plain integer is reported on stderr and ignored rather than guessed
-at, an unset or empty value keeps the default behavior, and a WebView the host
-does not have falls back to the default handler after saying so.
 
 ## Differences from upstream
 
