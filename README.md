@@ -171,139 +171,6 @@ in a subshell before starting a fresh shell — so aliases and functions a
 startup command defines are gone by the time you reach a prompt either way.
 Until bunmsh reads a startup file of its own, sourcing it by hand is the way.
 
-## Data & Persistence
-
-Running Buninu via `npx` works like a container: `npx` fetches the package into
-a cache directory and runs it from there, which is fine as a temporary working
-directory but isn't guaranteed to survive between runs — version bumps,
-`npx clear-npx-cache`, or normal cache eviction can all wipe it. That directory
-is where the shell starts, so nothing left sitting in it is safe.
-
-The answer is to stop running it from there: [install it](#install-and-update)
-into a directory of your own, and `BUNINU_HOME` becomes somewhere you can keep
-things, edit files in, and carry to another machine.
-
-Once it is installed, files you leave in `BUNINU_HOME` are safe, updates
-included — an update only adds and overwrites the package's own files and
-never deletes anything else. Your own home directory is untouched and still
-reachable as `~`, so work you would rather keep separate from Buninu, or that
-is too large to carry around with it, can just as well live there.
-
-Two things live outside `BUNINU_HOME` either way, because they belong to the
-machine rather than to Buninu:
-
-- `HOME` stays your own home directory. Buninu never replaces it, so a shell
-  started here still finds your SSH keys, your Git configuration, and anything
-  else you keep there.
-- bunmsh writes its command history to `$XDG_DATA_HOME/bunmsh/history`, or
-  `$HOME/.local/share/bunmsh/history` when that is unset. It persists between
-  sessions, and by default it stays on the machine it was typed on rather than
-  travelling with an installation.
-
-Set [`buninu.xdgDataHome`](#data-directory-optional) to move that history, and
-anything else written to the XDG data directory, into the installation so it
-travels with it. Keep in mind that a history file records the commands it was
-given, so one carried on removable media carries whatever was typed into it.
-
-## Install and update
-
-Copy this installation into a directory that is yours to keep, and run it
-from there instead of from the `npx` cache:
-
-```sh
-# Creates ~/somewhere/buninu as BUNINU_HOME
-npx buninu --install ~/somewhere
-
-# Makes ~/buninu itself BUNINU_HOME, with no directory of its own
-npx buninu --strip-install ~/buninu
-```
-
-Both default to the current directory. The two differ only in where
-`BUNINU_HOME` — the installation's own root, see
-[Environment](#environment) — ends up: below the directory you named, or at
-it. `npx buninu --install --help` lists every install option in full.
-
-An installation is started the same two ways `npx buninu` is, by running its
-own `bin/init.js` instead of the package name:
-
-```sh
-# Terminal in a browser, as usual
-bun $BUNINU_HOME/bin/init.js
-
-# bunmsh in this terminal (experimental)
-bun $BUNINU_HOME/bin/init.js --local
-```
-
-Every option described under [Start](#start) works the same way here, `--local`
-included; nothing about an installed copy behaves differently from the one
-`npx` runs.
-
-Installing over an existing Buninu updates it in place. Files are only added
-and overwritten, never deleted, so anything you added of your own is left
-alone: your `apps/<name>/` commands, your `bin/*.sh` overrides, the Bun
-binaries `bin/bun.sh` extracted, and any working file you left in the tree.
-
-Three files belong to you and to the package at the same time, and are merged
-rather than replaced:
-
-| File | What is kept |
-|---|---|
-| `package.json` | Your `buninu` section. Every other field, `version` included, comes from the new package. |
-| `apps/cmdlist` | Command names you added. They are appended below the shipped list. |
-| `.bashrc` | Your version, whenever it only adds lines to the shipped one — including lines inserted in the middle. |
-
-When `.bashrc` cannot be merged that way, because a line the package ships was
-changed or removed rather than added to, your file is left exactly as it is
-and the package's version is written beside it as `.bashrc.dist` for you to
-reconcile by hand. Nothing is overwritten silently.
-
-Every other file belongs to the package and is replaced. Before doing that, an
-update asks the registry what the installation originally shipped with and
-lists the files that no longer match, so editing one of the package's own files
-is not quietly undone:
-
-```
-buninu: found buninu@0.3.1 at /home/you/buninu
-buninu: comparing it against the published 0.3.1 for local changes...
-buninu: 1 file(s) differ from buninu@0.3.1 and will be replaced:
-  apps/xclip/xclip.js
-Update anyway? (y/N)
-```
-
-An existing installation is always named, by absolute path, before anything is
-written to it — `--force` included, since that one replaces it without asking.
-
-Only `y` continues; anything else cancels and leaves the installation
-untouched. The three merged files above are left out of that list, since they
-are already kept. `--yes` answers for you, which is also what a script or any
-other run without a terminal needs. Nothing about this is recorded inside the
-installation: the published package is the reference, so the check needs the
-network, and when it cannot run the update says so and goes ahead.
-
-Three more things are worth knowing about:
-
-- Installing from a checkout that already carries changes made since its
-  version was published — that is, while working on Buninu itself — compares
-  the installation against a reference its own files no longer match, so the
-  list names those unreleased changes rather than anything you did. Cloning it
-  and adding your own files on top does not.
-- A file the package **stopped** shipping is not removed from an existing
-  installation, because an update never deletes. Stale files accumulate
-  across updates.
-- `--force` skips both the merge and the check, and installs the shipped
-  versions over yours. It is also what installs into a non-empty directory that
-  is not a Buninu installation, which is otherwise refused — by absolute path,
-  saying which check the directory failed.
-
-Whether a directory counts as an installation to update is decided by the name
-in its `package.json`. An installation that has lost files, `bin/init.js`
-included, is a damaged one rather than somebody else's directory, so installing
-over it repairs it and still merges your configuration back in.
-
-A source checkout's own `.git` is never copied into an installation, so
-installing into a directory that is itself a repository leaves that repository
-alone.
-
 ## Security
 
 **Buninu binds its terminal server to `127.0.0.1`**, so out of the box it
@@ -327,13 +194,14 @@ These are flags to `bin/init.js` itself, resolved before Buninu starts.
 Everything else on the command line is forwarded to jsgotty.
 
 ```text
+--local          Start Buninu in this terminal instead of a remote shell
+                 reached from a browser
 -h, --help       Show command-line help
 -V, --version    Show the Buninu and Bun versions, plus platform and arch
 --readme         Render README.md in the terminal
 --changelog      Render CHANGELOG.md in the terminal
 --readme-tui     Open README.md as a navigable terminal UI
 --readme-wui     Serve README.md as a navigable Web UI
---local          Start bunmsh in this terminal instead of a browser terminal
 
 -i,  --install [dir]        Install into <dir>/buninu (default: .)
 -si, --strip-install [dir]  Install into <dir> itself
@@ -610,6 +478,139 @@ native-bridge showwv 1
 native-bridge evalwv 1 document.title
 native-bridge currwv
 ```
+
+## Data & Persistence
+
+Running Buninu via `npx` works like a container: `npx` fetches the package into
+a cache directory and runs it from there, which is fine as a temporary working
+directory but isn't guaranteed to survive between runs — version bumps,
+`npx clear-npx-cache`, or normal cache eviction can all wipe it. That directory
+is where the shell starts, so nothing left sitting in it is safe.
+
+The answer is to stop running it from there: [install it](#install-and-update)
+into a directory of your own, and `BUNINU_HOME` becomes somewhere you can keep
+things, edit files in, and carry to another machine.
+
+Once it is installed, files you leave in `BUNINU_HOME` are safe, updates
+included — an update only adds and overwrites the package's own files and
+never deletes anything else. Your own home directory is untouched and still
+reachable as `~`, so work you would rather keep separate from Buninu, or that
+is too large to carry around with it, can just as well live there.
+
+Two things live outside `BUNINU_HOME` either way, because they belong to the
+machine rather than to Buninu:
+
+- `HOME` stays your own home directory. Buninu never replaces it, so a shell
+  started here still finds your SSH keys, your Git configuration, and anything
+  else you keep there.
+- bunmsh writes its command history to `$XDG_DATA_HOME/bunmsh/history`, or
+  `$HOME/.local/share/bunmsh/history` when that is unset. It persists between
+  sessions, and by default it stays on the machine it was typed on rather than
+  travelling with an installation.
+
+Set [`buninu.xdgDataHome`](#data-directory-optional) to move that history, and
+anything else written to the XDG data directory, into the installation so it
+travels with it. Keep in mind that a history file records the commands it was
+given, so one carried on removable media carries whatever was typed into it.
+
+## Install and update
+
+Copy this installation into a directory that is yours to keep, and run it
+from there instead of from the `npx` cache:
+
+```sh
+# Creates ~/somewhere/buninu as BUNINU_HOME
+npx buninu --install ~/somewhere
+
+# Makes ~/buninu itself BUNINU_HOME, with no directory of its own
+npx buninu --strip-install ~/buninu
+```
+
+Both default to the current directory. The two differ only in where
+`BUNINU_HOME` — the installation's own root, see
+[Environment](#environment) — ends up: below the directory you named, or at
+it. `npx buninu --install --help` lists every install option in full.
+
+An installation is started the same two ways `npx buninu` is, by running its
+own `bin/init.js` instead of the package name:
+
+```sh
+# Terminal in a browser, as usual
+bun $BUNINU_HOME/bin/init.js
+
+# bunmsh in this terminal (experimental)
+bun $BUNINU_HOME/bin/init.js --local
+```
+
+Every option described under [Start](#start) works the same way here, `--local`
+included; nothing about an installed copy behaves differently from the one
+`npx` runs.
+
+Installing over an existing Buninu updates it in place. Files are only added
+and overwritten, never deleted, so anything you added of your own is left
+alone: your `apps/<name>/` commands, your `bin/*.sh` overrides, the Bun
+binaries `bin/bun.sh` extracted, and any working file you left in the tree.
+
+Three files belong to you and to the package at the same time, and are merged
+rather than replaced:
+
+| File | What is kept |
+|---|---|
+| `package.json` | Your `buninu` section. Every other field, `version` included, comes from the new package. |
+| `apps/cmdlist` | Command names you added. They are appended below the shipped list. |
+| `.bashrc` | Your version, whenever it only adds lines to the shipped one — including lines inserted in the middle. |
+
+When `.bashrc` cannot be merged that way, because a line the package ships was
+changed or removed rather than added to, your file is left exactly as it is
+and the package's version is written beside it as `.bashrc.dist` for you to
+reconcile by hand. Nothing is overwritten silently.
+
+Every other file belongs to the package and is replaced. Before doing that, an
+update asks the registry what the installation originally shipped with and
+lists the files that no longer match, so editing one of the package's own files
+is not quietly undone:
+
+```
+buninu: found buninu@0.3.1 at /home/you/buninu
+buninu: comparing it against the published 0.3.1 for local changes...
+buninu: 1 file(s) differ from buninu@0.3.1 and will be replaced:
+  apps/xclip/xclip.js
+Update anyway? (y/N)
+```
+
+An existing installation is always named, by absolute path, before anything is
+written to it — `--force` included, since that one replaces it without asking.
+
+Only `y` continues; anything else cancels and leaves the installation
+untouched. The three merged files above are left out of that list, since they
+are already kept. `--yes` answers for you, which is also what a script or any
+other run without a terminal needs. Nothing about this is recorded inside the
+installation: the published package is the reference, so the check needs the
+network, and when it cannot run the update says so and goes ahead.
+
+Three more things are worth knowing about:
+
+- Installing from a checkout that already carries changes made since its
+  version was published — that is, while working on Buninu itself — compares
+  the installation against a reference its own files no longer match, so the
+  list names those unreleased changes rather than anything you did. Cloning it
+  and adding your own files on top does not.
+- A file the package **stopped** shipping is not removed from an existing
+  installation, because an update never deletes. Stale files accumulate
+  across updates.
+- `--force` skips both the merge and the check, and installs the shipped
+  versions over yours. It is also what installs into a non-empty directory that
+  is not a Buninu installation, which is otherwise refused — by absolute path,
+  saying which check the directory failed.
+
+Whether a directory counts as an installation to update is decided by the name
+in its `package.json`. An installation that has lost files, `bin/init.js`
+included, is a damaged one rather than somebody else's directory, so installing
+over it repairs it and still merges your configuration back in.
+
+A source checkout's own `.git` is never copied into an installation, so
+installing into a directory that is itself a repository leaves that repository
+alone.
 
 ## Differences from upstream
 
@@ -1037,12 +1038,12 @@ an alias that fails to define leaves it reachable. See
 - [Start](#start)
   * [Start a remote shell in a Browser](#start-a-remote-shell-in-a-browser)
   * [Start a local shell in a Terminal (experimental)](#start-a-local-shell-in-a-terminal-experimental)
-- [Data & Persistence](#data--persistence)
-- [Install and update](#install-and-update)
 - [Security](#security)
 - [Command-line usage](#command-line-usage)
   * [Launching a bundled app directly](#launching-a-bundled-app-directly)
 - [Commands inside the shell](#commands-inside-the-shell)
+- [Data & Persistence](#data--persistence)
+- [Install and update](#install-and-update)
 - [Differences from upstream](#differences-from-upstream)
 - [Export](#export)
 - [Environment](#environment)

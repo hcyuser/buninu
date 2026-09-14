@@ -23,6 +23,8 @@ Usage:
   ${pkg.name} [init options] [jsgotty options]
 
 Init options:
+  --local                Start Buninu in this terminal instead of a remote
+                          shell reached from a browser
   -h, --help             Show this help and exit
   -V, --version          Show version and runtime information, then exit
   --readme               Render README.md in the terminal and exit
