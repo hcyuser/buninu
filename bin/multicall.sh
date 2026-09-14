@@ -1,12 +1,14 @@
 #!/bin/sh
 
-args=$(tr '\0' '\n' < /proc/$$/cmdline)
+if [ -f /proc/$$/cmdline ] ; then
+  args=$(tr '\0' '\n' < /proc/$$/cmdline)
+  caller=$(echo "$args" | head -n 1)
+  callerb=$(basename "$caller")
+else
+  callerb=$(basename "$0")
+fi
 
-caller=$(echo "$args" | head -n 1)
-
-callerb=$(basename "$caller")
-
-if [ "$callerb" = sh ] ; then
+if [ "$callerb" = sh ] || [ "$callerb" = bunmsh ] ; then
   callerb=$(basename "$0")
 fi
 
