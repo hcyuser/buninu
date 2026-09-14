@@ -360,13 +360,14 @@ and [Startup command](#startup-command-optional).
 
 ### Launching a bundled app directly
 
-As the **first** argument, `--jsgotty`, `--jsmdcui`, or `--musl-la` bypasses the
-shell and startup-command flow entirely: it spawns that app with every
-remaining argument forwarded to it, and exits with its exit code.
+As the **first** argument, `--jsgotty`, `--jsmdcui`, `--bunmsh`, or `--musl-la`
+bypasses the shell and startup-command flow entirely: it spawns that app with
+every remaining argument forwarded to it, and exits with its exit code.
 
 ```text
 --jsgotty [args...]  Spawn jsgotty directly and exit with its exit code
 --jsmdcui [args...]  Spawn jsmdcui directly and exit with its exit code
+--bunmsh [args...]   Spawn bunmsh directly and exit with its exit code
 --musl-la [args...]  Spawn musl-la directly and exit with its exit code
 ```
 

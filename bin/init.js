@@ -44,6 +44,7 @@ startup flow entirely):
                           arguments, and exit with its exit code
                           (--jsgotty --help shows jsgotty's own options)
   --jsmdcui [args...]    Spawn jsmdcui directly, same forwarding behavior
+  --bunmsh [args...]     Spawn bunmsh directly, same forwarding behavior
   --musl-la [args...]    Spawn musl-la directly, same forwarding behavior
 
 Package configuration:
@@ -530,6 +531,7 @@ async function createChildEnvironment(environment) {
 const directAppTargets = {
   "--jsgotty": "jsgotty",
   "--jsmdcui": "jsmdcui",
+  "--bunmsh": "bunmsh",
   "--musl-la": "musl-la",
 };
 
