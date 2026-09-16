@@ -560,7 +560,11 @@ own projects ship.
 
 `bunproot` is an optional tool downloaded by the user through `bunx` and is
 licensed under GPL-2.0-or-later; `js-udocker` is licensed under Apache-2.0.
-Neither is distributed with Buninu. The example below is Android-only.
+Neither is distributed with Buninu. 
+
+- `bunproot --git clone` should be cross-platform
+  * Tested on Android, Linux, and Windows
+- The container example below is Android-only.
 
 ```sh
 bunx bunproot
