@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.8 - 2026-09-16
+
+### Documentation
+
+- Add an Android-only optional-tools walkthrough for installing `bunproot`,
+  cloning `js-udocker`, and starting an Alpine container. Both tools remain
+  user-downloaded rather than bundled with Buninu; the README records
+  `bunproot` as GPL-2.0-or-later and `js-udocker` as Apache-2.0
+
 ## 0.4.7 - 2026-09-14
 
 ### Added
