@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.9 - 2026-09-16
+
+### Changed
+
+- Sync bunmsh to 0.3.6
+  * VS Code compatibility: accepts leading &
+
 ## 0.4.8 - 2026-09-16
 
 ### Documentation
