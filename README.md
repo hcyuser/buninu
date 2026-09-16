@@ -556,6 +556,22 @@ own projects ship.
   * No longer depends on or ships `node-pty`
   * Its PTY is provided by Bun's terminal API
 
+## Optional external tools
+
+`bunproot` is an optional tool downloaded by the user through `bunx` and is
+licensed under GPL-2.0-or-later; `js-udocker` is licensed under Apache-2.0.
+Neither is distributed with Buninu. The example below is Android-only.
+
+```sh
+bunx bunproot
+bunx bunproot --git clone https://github.com/jjtseng93/bunproot
+bunx bunproot --git clone https://github.com/jjtseng93/js-udocker
+cd js-udocker
+export JS_UDOCKER_BUNPROOT=$(realpath ../bunproot/proot.js)
+bun udocker.js run --name=ap alpine
+# bun udocker.js ps
+```
+
 ## Data & Persistence
 
 Running Buninu via `npx` works like a container: `npx` fetches the package into
@@ -1098,6 +1114,7 @@ an alias that fails to define leaves it reachable. See
   * [Launching a bundled app directly](#launching-a-bundled-app-directly)
 - [Commands inside the shell](#commands-inside-the-shell)
 - [Differences from upstream](#differences-from-upstream)
+- [Optional external tools](#optional-external-tools)
 - [Data & Persistence](#data--persistence)
 - [Install and update](#install-and-update)
 - [Export](#export)
