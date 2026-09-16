@@ -336,6 +336,8 @@ for how it works):
 - **Editing and viewing**
   * `jmi` — Edit files in the js micro editor
   * `glow` — View file contents with syntax highlighting
+  * `bun pm diff ./dir1 ./dir2` — diff 2 folders
+    + Can also diff against npm registry packages
 
 ---
 
