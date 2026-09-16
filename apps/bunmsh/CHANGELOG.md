@@ -2,6 +2,15 @@
 
 All notable user-visible changes to bunmsh are documented here.
 
+## [0.3.6] - 2026-09-15
+
+### Added
+
+- Accept a leading `&` as a PowerShell-compatible call operator on Windows,
+  or on any platform when `BUNMSH_LEADING_AND` is set before bunmsh starts.
+  This lets commands sent by VS Code's Play action run inside an already-open
+  bunmsh session, such as `& 'C:\Python313\python.exe' script.py`.
+
 ## [0.3.5] - 2026-09-09
 
 Version 0.3.4 was intentionally skipped because the number four is considered

@@ -3337,7 +3337,15 @@ async function runCommandArgv(
   captureStderr,
   options = {},
 ) {
-  let commandArgv = argv;
+  let commandArgv =  argv;
+  
+  if( process.env.BUNMSH_LEADING_AND || 
+      process.platform === "win32" )
+  {
+    if(argv[0] === "&")
+      commandArgv = argv.slice(1) ;
+  }
+  
   let commandState = state;
   if (options.pipelineStage && runsInPipelineSubprocess(commandArgv, commandState))
     return runExternal(
