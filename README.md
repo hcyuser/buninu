@@ -567,6 +567,7 @@ Neither is distributed with Buninu.
 - `bunproot --git clone` should be cross-platform
   * Tested on Android, Linux, and Windows
   * If git clone fails, try `bun pm cache rm`
+  * This `bunproot --git` also supports many other subcommands. Show them by `--git --help`
 - The container example below is Android-only.
 
 ```sh
