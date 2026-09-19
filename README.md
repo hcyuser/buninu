@@ -171,6 +171,30 @@ in a subshell before starting a fresh shell — so aliases and functions a
 startup command defines are gone by the time you reach a prompt either way.
 Until bunmsh reads a startup file of its own, sourcing it by hand is the way.
 
+### Start it in a VM with Docker
+
+A third way in, for when the host should stay untouched: a Docker image that
+boots a Linux kernel under QEMU and hands the entire userspace to Buninu —
+`bunmsh` runs as PID 1, with no init above it.
+
+```sh
+docker run --rm -it -p 8080:8080 hcyuser/buninu-vm
+```
+
+The browser terminal comes up on that port, on a random URL path read from the
+container log. `console` gives you the same guest without jsgotty, on the
+terminal you are already in:
+
+```sh
+docker run --rm -it hcyuser/buninu-vm console
+```
+
+The image lives on Docker Hub as
+[hcyuser/buninu-vm](https://hub.docker.com/r/hcyuser/buninu-vm). Building it
+yourself, the environment variables it reads, and what PID 1 = bunmsh costs are
+all in [docker/README.md](docker/README.md), beside the
+[Dockerfile](Dockerfile).
+
 ## Security
 
 **Buninu (when starting a remote shell) binds its terminal server to `127.0.0.1`**, so out of the box it
@@ -1117,6 +1141,7 @@ an alias that fails to define leaves it reachable. See
 - [Start](#start)
   * [Start a remote shell in a Browser](#start-a-remote-shell-in-a-browser)
   * [Start a local shell in a Terminal (experimental)](#start-a-local-shell-in-a-terminal-experimental)
+  * [Start it in a VM with Docker](#start-it-in-a-vm-with-docker)
 - [Security](#security)
 - [Command-line usage](#command-line-usage)
   * [Launching a bundled app directly](#launching-a-bundled-app-directly)

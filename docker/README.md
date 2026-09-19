@@ -11,6 +11,10 @@ This is the `Alpine + Bun + Buninu` stack from
 [ARCHITECTURE.md](../ARCHITECTURE.md#native-buninu-linux-distribution), built
 as a RAM-only initramfs instead of a disk image.
 
+Buninu is developed in collaboration with the upstream project at
+[github.com/jjtseng93/buninu](https://github.com/jjtseng93/buninu), and the
+userspace this image boots is that project's source tree.
+
 ```text
 Docker container
 └── QEMU
